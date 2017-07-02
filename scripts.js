@@ -59,20 +59,10 @@ function IDCT(s) {
 }
 
 
-// set up two copies of test data
-var origArr = [45, 39, 38, 34, 34, 27, 26, 29, 33, 56, 59, 94, 96, 87, 76, 53, 25, 9, 6, 6, 6, 10, 18, 27, 54, 89, 97, 98, 96, 70, 20, 7];
-var arr = [45, 39, 38, 34, 34, 27, 26, 29, 33, 56, 59, 94, 96, 87, 76, 53, 25, 9, 6, 6, 6, 10, 18, 27, 54, 89, 97, 98, 96, 70, 20, 7];
-// convert the second array into its discrete cosine transform
-DCT(arr);
-console.log(arr);
-// convert it back
-IDCT(arr);
-console.log(arr);
-
-
-
+var previousTime = new Date();
 // trigger the update of the image element when the image loads
 $(document).ready(function() {
+    logTime("Start calculations");
     // initially draw the first image to canvas
     drawDCTToCanvas($('#imageViewer')[0]);
     $('#fileInput').on('change', function(ev) {
@@ -101,9 +91,12 @@ function drawImageToCanvas(imageElement) {
 }
 
 function drawDCTToCanvas(imageElement) {
+    logTime("Start drawDCTToCanvas");
     var canvasSize = 256;
     ctx.drawImage(imageElement, 0, 0);
+    logTime("Draw Image to canvas");
     var imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+    logTime("Get imageData");
     var DCTImageData = imageData;
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
@@ -119,11 +112,15 @@ function drawDCTToCanvas(imageElement) {
             for (var x = 0; x < canvasSize; x++) {
                 DCTArray.push(imageData.data[(y * 4 * canvasSize) + (x * 4) + col]);
             }
-            DCTRowOutput[y][col] = DCT(DCTArray);
+            var premultipliedDCT = DCT(DCTArray);
+            mapDCTValues(premultipliedDCT);
+            IDCT(premultipliedDCT);
+            DCTRowOutput[y][col] = premultipliedDCT;
             // alert(DCTArray.toString());
             // alert(DCTRowOutput[y][col].toString());
         }
     }
+    logTime("DCT vertically");
     console.dir(DCTRowOutput);
     for (var x = 0; x < canvasSize; x++) {
         for (var col = 0; col < 3; col++) {
@@ -131,19 +128,36 @@ function drawDCTToCanvas(imageElement) {
             for (var y = 0; y < canvasSize; y++) {
                 DCTArray.push(DCTRowOutput[y][col][x]);
             }
-            DCTFinalOutput[x][col] = DCT(DCTArray);
-            alert(DCTArray.toString());
-            alert(DCTFinalOutput[x][col].toString());
+            var premultipliedDCT = DCT(DCTArray);
+            mapDCTValues(premultipliedDCT);
+            IDCT(premultipliedDCT);
+            DCTFinalOutput[x][col] = premultipliedDCT;
+            // alert(DCTArray.toString());
+            // alert(DCTFinalOutput[x][col].toString());
         }
     }
+    logTime("DCT Horizontally");
     for (var x = 0; x < canvasSize; x++) {
         for (var y = 0; y < canvasSize; y++) {
             for (var col = 0; col < 3; col++) {
-                DCTImageData.data[(x * canvasSize * 4) + (y * 4) + col] = DCTFinalOutput[x][col][y] * 0.001 + 127;
+                DCTImageData.data[(x * canvasSize * 4) + (y * 4) + col] = DCTFinalOutput[y][col][x];
             }
         }
     }
+    logTime("Generate DCTImageData");
     ctx.putImageData(DCTImageData, 0, 0);
+    logTime("Put ImageData");
+}
+
+
+function mapDCTValues(array) {
+    for (var i = 0; i < array.length; i++) {
+        if (i == 0) {
+
+        } else {
+            array[i] *= 1 + (i / array.length);
+        }
+    }
 }
 
 var c = document.getElementById("canvasElement");
@@ -151,3 +165,10 @@ var ctx = c.getContext("2d");
 ctx.moveTo(0, 0);
 ctx.lineTo(32, 32);
 ctx.stroke();
+
+
+
+function logTime(message) {
+    console.log(message + ": " + Math.floor((new Date() - previousTime) * 10) / 10000 + " sec.");
+    previousTime = new Date();
+}
