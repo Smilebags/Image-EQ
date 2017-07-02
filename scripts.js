@@ -29,6 +29,10 @@ $(document).ready(function() {
     $("#update").click(function() {
         updateOutput();
     });
+    $("#recalculate").click(function() {
+        calculateDCT();
+    });
+
 });
 
 
