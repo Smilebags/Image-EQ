@@ -10,12 +10,12 @@
     <img id="imageViewer" src="/DCTTest.png">
     <canvas id="canvasElement" width="128" height="128" style="border:1px solid #000000;"></canvas>
     <br/>
-    <input type="range" id="freqLo" />
+    <input type="range" id="freqLo" min="0" max="2" />
     <br/>
-    <input type="range" id="freqMd" />
+    <input type="range" id="freqMd" min="0" max="2" />
     <br/>
-    <input type="range" id="freqL" />
-
+    <input type="range" id="freqHi" min="0" max="2" />
+    <input type="button" id="update" value="Refresh Output" />
 
     <script src="scripts.js"></script>
 </body>
