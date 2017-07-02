@@ -1,9 +1,10 @@
 var previousTime = new Date();
 
-var DCTData, IDCTData = [];
-var imageData, mappedDCTData;
-
 var canvasSize = 256;
+
+var DCTData;
+var IDCTData = new ImageData(canvasSize, canvasSize);
+var imageData, mappedDCTData;
 
 var c = document.getElementById("canvasElement");
 var ctx = c.getContext("2d");
@@ -36,13 +37,18 @@ $(document).ready(function() {
 });
 
 
-
-// create Image from URL
-function imageFromURL(url) {
-    var imageObj = new Image();
-    imageObj.src = url;
-    return
+function calculateDCT() {
+    drawImageToCanvas($('#imageViewer')[0])
+    imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+    DCTData = generateDCT(imageData);
 }
+
+function updateOutput() {
+    mappedDCTData = mapDCTValues(DCTData);
+    IDCTData = generateIDCT(mappedDCTData);
+    ctx.putImageData(IDCTData, 0, 0);
+}
+
 
 function drawImageToCanvas(imageElement) {
     ctx.drawImage(imageElement, 0, 0);
@@ -58,8 +64,7 @@ function drawDCTToCanvas(imageElement) {
 
 }
 
-function generateDCT(imageData) {
-    var DCTImageData = imageData;
+function generateDCT(imageDataForFunction) {
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
         DCTRowOutput[i] = [];
@@ -72,7 +77,7 @@ function generateDCT(imageData) {
         for (var col = 0; col < 3; col++) {
             var DCTArray = [];
             for (var x = 0; x < canvasSize; x++) {
-                DCTArray.push(imageData.data[(y * 4 * canvasSize) + (x * 4) + col]);
+                DCTArray.push(imageDataForFunction.data[(y * 4 * canvasSize) + (x * 4) + col]);
             }
             var premultipliedDCT = DCT(DCTArray);
             DCTRowOutput[y][col] = premultipliedDCT;
@@ -93,8 +98,8 @@ function generateDCT(imageData) {
     return DCTFinalOutput;
 }
 
-function generateIDCT(DCTData, imageDataTemplate) {
-    var DCTImageData = imageDataTemplate;
+function generateIDCT(DCTDataForFunction) {
+    var DCTImageData = new ImageData(canvasSize, canvasSize);
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
         DCTRowOutput[i] = [];
@@ -107,7 +112,7 @@ function generateIDCT(DCTData, imageDataTemplate) {
         for (var col = 0; col < 3; col++) {
             var DCTArray = [];
             for (var x = 0; x < canvasSize; x++) {
-                DCTArray.push(DCTData[x][col][y]);
+                DCTArray.push(DCTDataForFunction[x][col][y]);
             }
             var premultipliedDCT = DCTArray;
             IDCT(premultipliedDCT);
@@ -129,8 +134,8 @@ function generateIDCT(DCTData, imageDataTemplate) {
     checkpoint("DCT Horizontally");
     for (var x = 0; x < canvasSize; x++) {
         for (var y = 0; y < canvasSize; y++) {
-            for (var col = 0; col < 3; col++) {
-                DCTImageData.data[(x * canvasSize * 4) + (y * 4) + col] = DCTFinalOutput[x][col][y];
+            for (var col = 0; col < 4; col++) {
+                DCTImageData.data[(x * canvasSize * 4) + (y * 4) + col] = col != 3 ? DCTFinalOutput[y][col][x] : 255;
             }
         }
     }
@@ -139,7 +144,7 @@ function generateIDCT(DCTData, imageDataTemplate) {
 
 function mapDCTValues(array) {
     // data is in form array[x][col][y]
-    var newArray = array;
+    var newArray = array.slice();
     var lo = document.querySelector("#freqLo").value;
     var md = document.querySelector("#freqMd").value;
     var hi = document.querySelector("#freqHi").value;
@@ -160,18 +165,6 @@ function mapDCTValues(array) {
 
 function lerp(v1, v2, progress) {
     return v1 * (1 - progress) + v2 * progress;
-}
-
-function calculateDCT() {
-    drawImageToCanvas($('#imageViewer')[0])
-    imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
-    DCTData = generateDCT(imageData);
-}
-
-function updateOutput() {
-    mappedDCTData = mapDCTValues(DCTData);
-    IDCTData = generateIDCT(mappedDCTData, imageData);
-    ctx.putImageData(IDCTData, 0, 0);
 }
 
 function checkpoint(message) {
