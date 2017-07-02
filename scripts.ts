@@ -1,12 +1,16 @@
+interface DCTData {
+    [x:number]:number[][]
+}
+
 var previousTime = new Date();
 
 var canvasSize = 256;
 
-var DCTData;
+var DCTData:DCTData;
 var IDCTData = new ImageData(canvasSize, canvasSize);
-var imageData, mappedDCTData;
+var imageData:ImageData, mappedDCTData:DCTData;
 
-var c = document.getElementById("canvasElement");
+var c:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvasElement");
 var ctx = c.getContext("2d");
 
 // trigger the update of the image element when the image loads
@@ -14,7 +18,7 @@ $(document).ready(function() {
     checkpoint("Start calculations");
     // initially draw the first image to canvas
     drawDCTToCanvas($('#imageViewer')[0]);
-    $('#fileInput').on('change', function(ev) {
+    $('#fileInput').on('change', function(ev:Event) {
         var f = ev.target.files[0];
         var fr = new FileReader();
 
@@ -37,39 +41,35 @@ $(document).ready(function() {
 });
 
 
-function calculateDCT() {
+function calculateDCT():void {
     drawImageToCanvas($('#imageViewer')[0])
     imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
     DCTData = generateDCT(imageData);
 }
 
-function updateOutput() {
+function updateOutput():void {
     mappedDCTData = mapDCTValues(DCTData);
     IDCTData = generateIDCT(mappedDCTData);
     ctx.putImageData(IDCTData, 0, 0);
 }
 
 
-function drawImageToCanvas(imageElement) {
+function drawImageToCanvas(imageElement:HTMLImageElement):void {
     ctx.drawImage(imageElement, 0, 0);
 }
 
-function drawDCTToCanvas(imageElement) {
+function drawDCTToCanvas(imageElement:HTMLImageElement):void {
     checkpoint("Start drawDCTToCanvas");
-
     ctx.drawImage(imageElement, 0, 0);
-
     checkpoint("Get imageData");
-
-
 }
 
-function generateDCT(imageDataForFunction) {
+function generateDCT(imageDataForFunction:ImageData):DCTData {
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
         DCTRowOutput[i] = [];
     }
-    var DCTFinalOutput = [];
+    var DCTFinalOutput:DCTData;
     for (var i = 0; i < canvasSize; i++) {
         DCTFinalOutput[i] = [];
     }
@@ -98,7 +98,7 @@ function generateDCT(imageDataForFunction) {
     return DCTFinalOutput;
 }
 
-function generateIDCT(DCTDataForFunction) {
+function generateIDCT(DCTDataForFunction:DCTData):ImageData {
     var DCTImageData = new ImageData(canvasSize, canvasSize);
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
