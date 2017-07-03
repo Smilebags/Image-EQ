@@ -1,75 +1,109 @@
+/// <reference path="typings/globals/jquery/index.d.ts"/>
+
 interface DCTData {
-    [x:number]:number[][]
+    [index: number]: number[][]
 }
 
-var previousTime = new Date();
+var previousTime = Number(new Date());
 
 var canvasSize = 256;
 
-var DCTData:DCTData;
-var IDCTData = new ImageData(canvasSize, canvasSize);
-var imageData:ImageData, mappedDCTData:DCTData;
 
-var c:HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvasElement");
-var ctx = c.getContext("2d");
+
 
 // trigger the update of the image element when the image loads
-$(document).ready(function() {
+$(document).ready(function () {
+
+    $(".upload-prompt").click(function(){
+        $("#fileInputLabel").click();
+    });
+    var c: HTMLCanvasElement = < HTMLCanvasElement > document.getElementById("canvasElement");
+    var ctx = c.getContext("2d");
+
+    var imageElement = <HTMLImageElement>$('#imageViewer')[0];
+    imageElement.onload = function() {
+        drawImageToCanvas(<HTMLImageElement>this);
+        imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+        DCTData = calculateDCT(imageData);
+    }
+
+    $("input[type='range']").change(function() {
+        mappedDCTData = mapDCTValues(DCTData);
+        IDCTData = generateIDCT(mappedDCTData);
+        ctx.putImageData(IDCTData, 0, 0);
+    });
+
+    var DCTData: DCTData;
+    var IDCTData = new ImageData(canvasSize, canvasSize);
+    var imageData = new ImageData(canvasSize, canvasSize);
+    var mappedDCTData: DCTData;
     checkpoint("Start calculations");
+
+    
+    // imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+    // DCTData = calculateDCT(imageData);
+    // mappedDCTData = mapDCTValues(DCTData);
+    // IDCTData = generateIDCT(mappedDCTData);
+    // ctx.putImageData(IDCTData, 0, 0);
+
+
     // initially draw the first image to canvas
-    drawDCTToCanvas($('#imageViewer')[0]);
-    $('#fileInput').on('change', function(ev:Event) {
-        var f = ev.target.files[0];
+    $('#fileInput').on('change', function (ev: Event) {
+        var f = ( < HTMLInputElement > ev.target).files[0];
         var fr = new FileReader();
 
-        fr.onload = function(ev2) {
+        fr.onload = function (ev2) {
             console.dir(ev2);
-            $('#imageViewer').attr('src', ev2.target.result);
-            calculateDCT();
-            updateOutput();
+            $('#imageViewer').attr('src', ( < FileReader > ev2.target).result);
+            drawImageToCanvas(imageElement);
+            imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+            DCTData = calculateDCT(imageData);
+            mappedDCTData = mapDCTValues(DCTData);
+            IDCTData = generateIDCT(mappedDCTData);
+            ctx.putImageData(IDCTData, 0, 0);
         };
 
         fr.readAsDataURL(f);
     });
-    $("#update").click(function() {
-        updateOutput();
+    $("#update").click(function () {
+        mappedDCTData = mapDCTValues(DCTData);
+        IDCTData = generateIDCT(mappedDCTData);
+        ctx.putImageData(IDCTData, 0, 0);
     });
-    $("#recalculate").click(function() {
-        calculateDCT();
+    $("#recalculate").click(function () {
+        drawImageToCanvas(imageElement);
+        imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+        DCTData = calculateDCT(imageData);
     });
 
-});
 
 
-function calculateDCT():void {
-    drawImageToCanvas($('#imageViewer')[0])
-    imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
-    DCTData = generateDCT(imageData);
-}
 
-function updateOutput():void {
-    mappedDCTData = mapDCTValues(DCTData);
-    IDCTData = generateIDCT(mappedDCTData);
-    ctx.putImageData(IDCTData, 0, 0);
+function calculateDCT(imageData: ImageData): DCTData {
+    var DCTData = generateDCT(imageData);
+    return DCTData;
 }
 
 
-function drawImageToCanvas(imageElement:HTMLImageElement):void {
+function drawImageToCanvas(imageElement: HTMLImageElement): void {
     ctx.drawImage(imageElement, 0, 0);
 }
 
-function drawDCTToCanvas(imageElement:HTMLImageElement):void {
-    checkpoint("Start drawDCTToCanvas");
-    ctx.drawImage(imageElement, 0, 0);
-    checkpoint("Get imageData");
+function drawImageDataToCanvas(imageData: ImageData): void {
+    ctx.putImageData(imageData, 0, 0);
 }
 
-function generateDCT(imageDataForFunction:ImageData):DCTData {
+function drawDCTToCanvas(DCT: DCTData): void {
+    var imageData = formatDCTAsImageData(DCT);
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function generateDCT(imageData: ImageData): DCTData {
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
         DCTRowOutput[i] = [];
     }
-    var DCTFinalOutput:DCTData;
+    var DCTFinalOutput: DCTData = new Array();
     for (var i = 0; i < canvasSize; i++) {
         DCTFinalOutput[i] = [];
     }
@@ -77,7 +111,7 @@ function generateDCT(imageDataForFunction:ImageData):DCTData {
         for (var col = 0; col < 3; col++) {
             var DCTArray = [];
             for (var x = 0; x < canvasSize; x++) {
-                DCTArray.push(imageDataForFunction.data[(y * 4 * canvasSize) + (x * 4) + col]);
+                DCTArray.push(Number(imageData.data[(y * 4 * canvasSize) + (x * 4) + col]));
             }
             var premultipliedDCT = DCT(DCTArray);
             DCTRowOutput[y][col] = premultipliedDCT;
@@ -98,8 +132,7 @@ function generateDCT(imageDataForFunction:ImageData):DCTData {
     return DCTFinalOutput;
 }
 
-function generateIDCT(DCTDataForFunction:DCTData):ImageData {
-    var DCTImageData = new ImageData(canvasSize, canvasSize);
+function generateIDCT(DCTData: DCTData): ImageData {
     var DCTRowOutput = [];
     for (var i = 0; i < canvasSize; i++) {
         DCTRowOutput[i] = [];
@@ -112,42 +145,46 @@ function generateIDCT(DCTDataForFunction:DCTData):ImageData {
         for (var col = 0; col < 3; col++) {
             var DCTArray = [];
             for (var x = 0; x < canvasSize; x++) {
-                DCTArray.push(DCTDataForFunction[x][col][y]);
+                DCTArray.push(DCTData[x][col][y]);
             }
-            var premultipliedDCT = DCTArray;
-            IDCT(premultipliedDCT);
+            premultipliedDCT = IDCT(DCTArray);
             DCTRowOutput[y][col] = premultipliedDCT;
         }
     }
-    checkpoint("DCT vertically");
+    //take the vertical IDCT results
     for (var x = 0; x < canvasSize; x++) {
         for (var col = 0; col < 3; col++) {
             var DCTArray = [];
             for (var y = 0; y < canvasSize; y++) {
                 DCTArray.push(DCTRowOutput[y][col][x]);
             }
-            var premultipliedDCT = DCTArray;
-            IDCT(premultipliedDCT);
+            var premultipliedDCT = IDCT(DCTArray);
             DCTFinalOutput[x][col] = premultipliedDCT;
         }
     }
     checkpoint("DCT Horizontally");
-    for (var x = 0; x < canvasSize; x++) {
-        for (var y = 0; y < canvasSize; y++) {
-            for (var col = 0; col < 4; col++) {
-                DCTImageData.data[(x * canvasSize * 4) + (y * 4) + col] = col != 3 ? DCTFinalOutput[y][col][x] : 255;
-            }
-        }
-    }
+    var DCTImageData = formatDCTAsImageData(DCTFinalOutput);
     return DCTImageData;
 }
 
-function mapDCTValues(array) {
+function formatDCTAsImageData(DCT: DCTData): ImageData {
+    var imageData = new ImageData(canvasSize, canvasSize);
+    for (var x = 0; x < canvasSize; x++) {
+        for (var y = 0; y < canvasSize; y++) {
+            for (var col = 0; col < 4; col++) {
+                imageData.data[(x * canvasSize * 4) + (y * 4) + col] = col != 3 ? DCT[y][col][x] : 255;
+            }
+        }
+    }
+    return imageData;
+}
+
+function mapDCTValues(array: DCTData): DCTData {
     // data is in form array[x][col][y]
-    var newArray = array.slice();
-    var lo = document.querySelector("#freqLo").value;
-    var md = document.querySelector("#freqMd").value;
-    var hi = document.querySelector("#freqHi").value;
+    var newArray: DCTData = JSON.parse(JSON.stringify(array));
+    var lo = Number(( < HTMLInputElement > document.querySelector("#freqLo")).value);
+    var md = Number(( < HTMLInputElement > document.querySelector("#freqMd")).value);
+    var hi = Number(( < HTMLInputElement > document.querySelector("#freqHi")).value);
     for (var x = 0; x < canvasSize; x++) {
         for (var col = 0; col < 3; col++) {
             for (var y = 0; y < canvasSize; y++) {
@@ -163,13 +200,13 @@ function mapDCTValues(array) {
 }
 
 
-function lerp(v1, v2, progress) {
-    return v1 * (1 - progress) + v2 * progress;
+function lerp(v1: number, v2: number, progress: number): number {
+    return (v1 * (1 - progress) + v2 * progress);
 }
 
-function checkpoint(message) {
-    console.log(message + ": " + Math.floor((new Date() - previousTime) * 10) / 10000 + " sec.");
-    previousTime = new Date();
+function checkpoint(message: String) {
+    console.log(message + ": " + Math.floor((Number(new Date()) - previousTime) * 10) / 10000 + " sec.");
+    previousTime = Number(new Date());
 }
 
 
@@ -178,7 +215,7 @@ function checkpoint(message) {
 
 
 // Math functions
-function FFT(re, im) {
+function FFT(re: Float64Array, im: Float64Array) {
     var N = re.length;
     for (var i = 0; i < N; i++) {
         for (var j = 0, h = i, k = N; k >>= 1; h >>= 1)
@@ -202,7 +239,7 @@ function FFT(re, im) {
             }
 };
 
-function DCT(s) {
+function DCT(s: number[]): number[] {
     var N = s.length,
         K = -Math.PI / (2 * N),
         re = new Float64Array(N),
@@ -219,7 +256,8 @@ function DCT(s) {
     return returnArray;
 };
 
-function IDCT(s) {
+function IDCT(s: number[]): number[] {
+    var out = new Array;
     var N = s.length;
     var K = Math.PI / (2 * N);
     var im = new Float64Array(N);
@@ -233,7 +271,10 @@ function IDCT(s) {
     }
     FFT(im, re);
     for (var i = 0; i < N / 2; i++) {
-        s[2 * i] = re[i]
-        s[2 * i + 1] = re[N - i - 1]
+        out[2 * i] = re[i]
+        out[2 * i + 1] = re[N - i - 1]
     }
+    return out;
 }
+
+});
