@@ -1,22 +1,30 @@
 <html>
 
 <head>
-    <link href="styles.css" type="stylesheet">
+    <link href="/styles.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </head>
 
 <body>
-    <input type="file" id="fileInput">
-    <img id="imageViewer" src="/DCTTest.png">
-    <canvas id="canvasElement" width="128" height="128" style="border:1px solid #000000;"></canvas>
-    <br/>
-    <input type="range" step="0.1" id="freqLo" min="0" max="2" />
-    <br/>
-    <input type="range" step="0.1" id="freqMd" min="0" max="2" />
-    <br/>
-    <input type="range" step="0.1" id="freqHi" min="0" max="2" />
-    <input type="button" id="update" value="Update Output" />
-    <input type="button" id="recalculate" value="Recalculate Data" />
+    <div class="wrapper">
+        <h1>Image EQ</h1>
+        <p>This is the input image. You can use this or <span class="upload-prompt">upload your own</a>.</p>
+        <img id="imageViewer" src="/Face.jpg">
+        <input type="file" id="fileInput">
+        <label for="fileInput" id="fileInputLabel">Choose a file</label>
+
+        <label class="frequency-label" for="freqLo" >Low Frequencies:</label>  
+        <input type="range" step="0.1" id="freqLo" min="0" max="2" />
+        <label class="frequency-label" for="freqMd">Mid Frequencies:</label>
+        <input type="range" step="0.1" id="freqMd" min="0" max="2" />
+        <label class="frequency-label" for="freqHi">High Frequencies:</label>
+        <input type="range" step="0.1" id="freqHi" min="0" max="2" />
+        
+        <!--<input type="button" id="update" value="Update Output" />
+        <input type="button" id="recalculate" value="Recalculate Data" />-->
+            <canvas id="canvasElement" width="256" height="256" ></canvas>
+
+    </div>
 
     <script src="scripts.js"></script>
 </body>

@@ -1,3 +1,66 @@
+html,
+body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-size: calc(16px + 1vmin);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+input {
+    width: 100%;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+input[type="range"] {
+    margin: 0;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.wrapper {
+    margin: 0 auto;
+    max-width: 512px;
+    margin-bottom: 32px;
+}
+
+.upload-prompt {
+    color: #1155aa;
+    text-decoration: underline;
+    &:hover {
+        text-decoration: none;
+        ;
+    }
+}
+
+#fileInputLabel {
+    display: block;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    margin: 32px auto;
+}
+
+#fileInput {
+    display: none;
+}
+
 #imageViewer {
-    max-width: 256px;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
 }
