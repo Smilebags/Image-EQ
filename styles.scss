@@ -52,6 +52,82 @@ input[type="range"] {
     @extend a;
 }
 
+.eq {
+    background-color: #333333;
+    position: relative;
+    display: block;
+    border-radius: 4px;
+    width: 100%;
+    padding-bottom: 50%;
+    %point {
+        background-color: #cccccc;
+        width: 8px;
+        height: 8px;
+        top: calc(50% - 4px);
+        border-radius: 50%;
+        position: absolute;
+    }
+    @for $i from 1 through 7 {
+        .point-#{$i} {
+            @extend %point;
+            $temp: 12.5% * $i;
+            left: calc(#{$temp} - 4px);
+        }
+    }
+    %line {
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+    %h {
+        @extend %line;
+        width: 100%;
+        height: 1px;
+    }
+    %v {
+        @extend %line;
+        width: 1px;
+        height: 100%;
+    }
+    %v-minor {
+        @extend %v;
+        content: "";
+        width: 0.5px;
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    %h-minor {
+        @extend %h;
+        content: "";
+        height: 0.5px;
+        background-color: rgba(255, 255, 255, 0.03);
+    }
+    .center-h {
+        @extend %h;
+        top: calc(50% - 0.5px);
+    }
+    .center-v {
+        @extend %v;
+        left: calc(50% - 0.5px);
+    }
+    @for $i from 1 through 15 {
+        .v-#{$i} {
+            @extend %v-minor;
+            left: 6.25% * $i;
+        }
+    }
+    @for $i from 1 through 7 {
+        .h-#{$i} {
+            @extend %h-minor;
+            top: 12.5% * $i;
+        }
+    }
+    .v-4,
+    .v-12,
+    .h-2,
+    .h-6 {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
 #fileInputLabel,
 input[type="button"] {
     display: block;
