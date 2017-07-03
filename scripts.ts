@@ -210,7 +210,7 @@ function mapDCTValues(array: DCTData): DCTData {
         for (var col = 0; col < 3; col++) {
             for (var y = 0; y < canvasSize; y++) {
                 if (!(x == 0 && y == 0)) {
-                    var weight = Math.sqrt((Math.pow((x / canvasSize), 2) + Math.pow((y / canvasSize), 2)) / Math.sqrt(2));
+                    var weight = Math.pow((Math.pow((x / canvasSize), 2) + Math.pow((y / canvasSize), 2)) / Math.sqrt(2),0.25);
                     var multValue = weight <= 0.5 ? lerp(lo, md, weight * 2) : lerp(md, hi, (weight * 2) - 1);
                     newArray[x][col][y] *= multValue; //(1 / (x ^ 2 + y ^ 2));
                 }
