@@ -9,44 +9,44 @@ var previousTime = Number(new Date());
 var canvasSize = 512;
 
 
-    var c: HTMLCanvasElement = < HTMLCanvasElement > document.getElementById("canvasElement");
-    var ctx = c.getContext("2d");
+var c: HTMLCanvasElement = <HTMLCanvasElement> document.getElementById("canvasElement");
+var ctx = c.getContext("2d");
 
 
-        var DCTData: DCTData;
-    var IDCTData = new ImageData(canvasSize, canvasSize);
-    var imageData = new ImageData(canvasSize, canvasSize);
-    var mappedDCTData: DCTData;
+var DCTData: DCTData;
+var IDCTData = new ImageData(canvasSize, canvasSize);
+var imageData = new ImageData(canvasSize, canvasSize);
+var mappedDCTData: DCTData;
 
-var imageElement = <HTMLImageElement>$('#imageViewer')[0];
-    imageElement.onload = function(){
-        drawImageToCanvas(<HTMLImageElement>imageElement);
-        imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
-        DCTData = calculateDCT(imageData);
-    }
+var imageElement = <HTMLImageElement> $('#imageViewer')[0];
+imageElement.onload = function () {
+    drawImageToCanvas( <HTMLImageElement> imageElement);
+    imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+    DCTData = calculateDCT(imageData);
+}
 
 
 // trigger the update of the image element when the image loads
 $(document).ready(function () {
 
-    $(".upload-prompt").click(function(){
+    $(".upload-prompt").click(function () {
         $("#fileInputLabel").click();
     });
 
 
 
 
-    
 
-    $("input[type='range']").change(function() {
+
+    $("input[type='range']").change(function () {
         mappedDCTData = mapDCTValues(DCTData);
         IDCTData = generateIDCT(mappedDCTData);
         ctx.putImageData(IDCTData, 0, 0);
     });
 
-    
 
-    
+
+
     // imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
     // DCTData = calculateDCT(imageData);
     // mappedDCTData = mapDCTValues(DCTData);
@@ -56,12 +56,12 @@ $(document).ready(function () {
 
     // initially draw the first image to canvas
     $('#fileInput').on('change', function (ev: Event) {
-        var f = ( < HTMLInputElement > ev.target).files[0];
+        var f = ( <HTMLInputElement> ev.target).files[0];
         var fr = new FileReader();
 
         fr.onload = function (ev2) {
             console.dir(ev2);
-            $('#imageViewer').attr('src', ( < FileReader > ev2.target).result);
+            $('#imageViewer').attr('src', ( <FileReader> ev2.target).result);
             drawImageToCanvas(imageElement);
             imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
             DCTData = calculateDCT(imageData);
@@ -98,16 +98,16 @@ function calculateDCT(imageData: ImageData): DCTData {
 function drawImageToCanvas(imageElement: HTMLImageElement): void {
     var w = imageElement.naturalWidth;
     var h = imageElement.naturalHeight;
-    var min = Math.min(w,h);
-    var sx = (w/2) - (min/2);
-    var sy = (h/2) - (min/2);
+    var min = Math.min(w, h);
+    var sx = (w / 2) - (min / 2);
+    var sy = (h / 2) - (min / 2);
     var swidth = min;
     var sheight = min;
     var x = 0;
     var y = 0;
     var width = canvasSize;
     var height = canvasSize;
-    ctx.drawImage(imageElement,sx,sy,swidth,sheight,x,y,width,height);
+    ctx.drawImage(imageElement, sx, sy, swidth, sheight, x, y, width, height);
 }
 
 function drawImageDataToCanvas(imageData: ImageData): void {
@@ -203,14 +203,14 @@ function formatDCTAsImageData(DCT: DCTData): ImageData {
 function mapDCTValues(array: DCTData): DCTData {
     // data is in form array[x][col][y]
     var newArray: DCTData = JSON.parse(JSON.stringify(array));
-    var lo = Number(( < HTMLInputElement > document.querySelector("#freqLo")).value);
-    var md = Number(( < HTMLInputElement > document.querySelector("#freqMd")).value);
-    var hi = Number(( < HTMLInputElement > document.querySelector("#freqHi")).value);
+    var lo = Number(( <HTMLInputElement> document.querySelector("#freqLo")).value);
+    var md = Number(( <HTMLInputElement> document.querySelector("#freqMd")).value);
+    var hi = Number(( <HTMLInputElement> document.querySelector("#freqHi")).value);
     for (var x = 0; x < canvasSize; x++) {
         for (var col = 0; col < 3; col++) {
             for (var y = 0; y < canvasSize; y++) {
                 if (!(x == 0 && y == 0)) {
-                    var weight = Math.pow((Math.pow((x / canvasSize), 2) + Math.pow((y / canvasSize), 2)) / Math.sqrt(2),0.175);
+                    var weight = Math.pow((Math.pow((x / canvasSize), 2) + Math.pow((y / canvasSize), 2)) / Math.sqrt(2), 0.175);
                     var multValue = weight <= 0.5 ? lerp(lo, md, weight * 2) : lerp(md, hi, (weight * 2) - 1);
                     newArray[x][col][y] *= multValue; //(1 / (x ^ 2 + y ^ 2));
                 }
@@ -297,4 +297,3 @@ function IDCT(s: number[]): number[] {
     }
     return out;
 }
-
