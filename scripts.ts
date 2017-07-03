@@ -9,6 +9,21 @@ var previousTime = Number(new Date());
 var canvasSize = 256;
 
 
+    var c: HTMLCanvasElement = < HTMLCanvasElement > document.getElementById("canvasElement");
+    var ctx = c.getContext("2d");
+
+
+        var DCTData: DCTData;
+    var IDCTData = new ImageData(canvasSize, canvasSize);
+    var imageData = new ImageData(canvasSize, canvasSize);
+    var mappedDCTData: DCTData;
+
+var imageElement = <HTMLImageElement>$('#imageViewer')[0];
+    imageElement.onload = function(){
+        drawImageToCanvas(<HTMLImageElement>imageElement);
+        imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
+        DCTData = calculateDCT(imageData);
+    }
 
 
 // trigger the update of the image element when the image loads
@@ -17,15 +32,11 @@ $(document).ready(function () {
     $(".upload-prompt").click(function(){
         $("#fileInputLabel").click();
     });
-    var c: HTMLCanvasElement = < HTMLCanvasElement > document.getElementById("canvasElement");
-    var ctx = c.getContext("2d");
 
-    var imageElement = <HTMLImageElement>$('#imageViewer')[0];
-    imageElement.onload = function() {
-        drawImageToCanvas(<HTMLImageElement>this);
-        imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
-        DCTData = calculateDCT(imageData);
-    }
+
+
+
+    
 
     $("input[type='range']").change(function() {
         mappedDCTData = mapDCTValues(DCTData);
@@ -33,11 +44,7 @@ $(document).ready(function () {
         ctx.putImageData(IDCTData, 0, 0);
     });
 
-    var DCTData: DCTData;
-    var IDCTData = new ImageData(canvasSize, canvasSize);
-    var imageData = new ImageData(canvasSize, canvasSize);
-    var mappedDCTData: DCTData;
-    checkpoint("Start calculations");
+    
 
     
     // imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
@@ -74,9 +81,12 @@ $(document).ready(function () {
         drawImageToCanvas(imageElement);
         imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
         DCTData = calculateDCT(imageData);
+        $("#freqLo").val("1");
+        $("#freqMd").val("1");
+        $("#freqHi").val("1");
     });
 
-
+});
 
 
 function calculateDCT(imageData: ImageData): DCTData {
@@ -86,7 +96,18 @@ function calculateDCT(imageData: ImageData): DCTData {
 
 
 function drawImageToCanvas(imageElement: HTMLImageElement): void {
-    ctx.drawImage(imageElement, 0, 0);
+    var w = imageElement.naturalWidth;
+    var h = imageElement.naturalHeight;
+    var min = Math.min(w,h);
+    var sx = (w/2) - (min/2);
+    var sy = (h/2) - (min/2);
+    var swidth = min;
+    var sheight = min;
+    var x = 0;
+    var y = 0;
+    var width = canvasSize;
+    var height = canvasSize;
+    ctx.drawImage(imageElement,sx,sy,swidth,sheight,x,y,width,height);
 }
 
 function drawImageDataToCanvas(imageData: ImageData): void {
@@ -277,4 +298,3 @@ function IDCT(s: number[]): number[] {
     return out;
 }
 
-});
