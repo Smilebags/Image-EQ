@@ -7,11 +7,14 @@ body {
 body {
     font-size: calc(16px + 1vmin);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: rgba(0, 0, 0, 0.8);
+    background-color: #f0f0f0;
 }
 
 h1 {
     text-align: center;
     text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.6);
 }
 
 input {
