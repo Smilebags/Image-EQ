@@ -1,0 +1,22 @@
+{
+  "name": "frequency-eq-in-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "scripts.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Smilebags/Image-EQ.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Smilebags/Image-EQ/issues"
+  },
+  "homepage": "https://github.com/Smilebags/Image-EQ#readme",
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
