@@ -1,8 +1,7 @@
-import { canvasSize } from './constants.js';
 import { distSq, mapping, lerp } from './utils.js';
 
-var eqHeight = canvasSize / 2;
-var eqWidth = canvasSize;
+var eqHeight = 256;
+var eqWidth = 512;
 
 var eqElement = <HTMLCanvasElement>document.getElementById("eq");
 var eqContext = eqElement.getContext('2d')!;

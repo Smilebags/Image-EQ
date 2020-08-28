@@ -1,5 +1,6 @@
 import { DCTData } from "interfaces.js";
 import { canvasSize } from './constants.js';
+import { DCT, IDCT } from './dct.js';
 
 export function calculateDCT(imageData: ImageData, callback: (data: DCTData) => any): void {
   generateDCT(imageData).then((data) => {

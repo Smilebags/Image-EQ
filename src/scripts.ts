@@ -7,23 +7,20 @@ import { canvasSize } from './constants.js';
 import { points, sample } from "./eq-control.js";
 
 var c: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvasElement");
-var ctx = c.getContext("2d");
+var ctx = c.getContext("2d")!;
 
-
-var DCTData: DCTData;
+var dctData: DCTData;
 var IDCTData = new ImageData(canvasSize, canvasSize);
 var imageData = new ImageData(canvasSize, canvasSize);
 var mappedDCTData: DCTData;
 
-
-
 var imageElement = document.querySelector('#imageViewer') as HTMLImageElement;
 imageElement.onload = function () {
   drawImageToCanvas(<HTMLImageElement>imageElement);
-  imageData = ctx!.getImageData(0, 0, canvasSize, canvasSize);
+  imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
   calc.calculateDCT(imageData, (data) => {
     // We have pressed recalculate and the DCT data has been created
-    DCTData = data;
+    dctData = data;
     //I don't think we need to do anything else yet
   });
 }
@@ -50,12 +47,12 @@ window.addEventListener('DOMContentLoaded', () => {
       console.dir(ev2);
       (document.querySelector('#imageViewer') as HTMLImageElement).src = (ev2.target as FileReader).result as any;
       drawImageToCanvas(imageElement);
-      imageData = ctx!.getImageData(0, 0, canvasSize, canvasSize);
+      imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
       calc.calculateDCT(imageData, (data) => {
-        DCTData = data;
-        mappedDCTData = mapDCTValues(DCTData);
+        dctData = data;
+        mappedDCTData = mapDCTValues(dctData);
         IDCTData = calc.generateIDCT(mappedDCTData);
-        ctx!.putImageData(IDCTData, 0, 0);
+        ctx.putImageData(IDCTData, 0, 0);
       });
 
     };
@@ -68,17 +65,17 @@ window.addEventListener('DOMContentLoaded', () => {
   //     ctx.putImageData(IDCTData, 0, 0);
   // });
   document.querySelector("#render")!.addEventListener('click', function () {
-    mappedDCTData = mapDCTValues(DCTData);
+    mappedDCTData = mapDCTValues(dctData);
     IDCTData = calc.generateIDCT(mappedDCTData);
-    ctx!.putImageData(IDCTData, 0, 0);
+    ctx.putImageData(IDCTData, 0, 0);
   });
 
   document.querySelector("#recalculate")!.addEventListener('click', function () {
     drawImageToCanvas(imageElement);
-    imageData = ctx!.getImageData(0, 0, canvasSize, canvasSize);
+    imageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
     calc.calculateDCT(imageData, (data) => {
       // We have pressed recalculate and the DCT data has been created
-      DCTData = data;
+      dctData = data;
       //I don't think we need to do anything else yet
     });
 
@@ -97,16 +94,16 @@ function drawImageToCanvas(imageElement: HTMLImageElement): void {
   var y = 0;
   var width = canvasSize;
   var height = canvasSize;
-  ctx!.drawImage(imageElement, sx, sy, swidth, sheight, x, y, width, height);
+  ctx.drawImage(imageElement, sx, sy, swidth, sheight, x, y, width, height);
 }
 
 function drawImageDataToCanvas(imageData: ImageData): void {
-  ctx!.putImageData(imageData, 0, 0);
+  ctx.putImageData(imageData, 0, 0);
 }
 
 function drawDCTToCanvas(DCT: DCTData): void {
   var imageData = calc.formatDCTAsImageData(DCT);
-  ctx!.putImageData(imageData, 0, 0);
+  ctx.putImageData(imageData, 0, 0);
 }
 
 
