@@ -16,3 +16,5 @@ export function distSq(p1: number[], p2: number[]): number {
 export function mapping(value: number, inFrom: number, inTo: number, outFrom: number, outTo: number): number {
   return (((value - inFrom) / (inTo - inFrom)) * (outTo - outFrom)) + outFrom;
 }
+
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

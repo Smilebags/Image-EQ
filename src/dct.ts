@@ -60,5 +60,19 @@ export function IDCT(s: number[]): number[] {
   return out;
 }
 
+export function DCTInPlace(source: Float32Array, destination: Float32Array): void {
+  const length = source.length;
+  const K = -Math.PI / (2 * length);
+  const real = new Float64Array(length);
+  const imaginary = new Float64Array(length);
 
+  for (let i = 0, j = length; j > i; i++) {
+    real[i] = source[i * 2];
+    real[--j] = source[i * 2 + 1];
+  }
+  FFT(real, imaginary);
+  for (var i = 0; i < length; i++) {
+    destination[i] = 2 * real[i] * Math.cos(K * i) - 2 * imaginary[i] * Math.sin(K * i);
+  }
+};
 

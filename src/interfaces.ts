@@ -1,1 +1,1 @@
-export type DCTData = number[][][];
+export type ChannelIndex = 0 | 1 | 2;
