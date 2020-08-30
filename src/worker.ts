@@ -69,15 +69,14 @@ class CalculationWorker {
         this.buffers[payload.sourceBufferName],
         this.buffers[payload.destinationBufferName],
       );
+    } else {
+        this.columnDCT(
+          payload.channel,
+          payload.index,
+          this.buffers[payload.sourceBufferName],
+            this.buffers[payload.destinationBufferName],
+      );
     }
-    //   else {
-    //     this.columnDCT(
-    //       payload.channel,
-    //       payload.index,
-    //       this.buffers[payload.sourceBufferName],
-    //         this.buffers[payload.destinationBufferName],
-    //   );
-    // }
   }
 
   private rowDCT(
@@ -90,12 +89,18 @@ class CalculationWorker {
     const dest = new Float32Array(source.length);
     DCTInPlace(source, dest);
     destinationBuffer.setChannelRow(dest, channel, index);
-    // this.sendMessage({
-    //   channel,
-    //   index,
-    //   sourceBuffer,
-    //   destinationBuffer,
-    // });
+  }
+
+  private columnDCT(
+    channel: ChannelIndex,
+    index: number,
+    sourceBuffer: ImageBuffer,
+    destinationBuffer: ImageBuffer,
+  ) {
+    const source = sourceBuffer.getChannelColumn(channel, index);
+    const dest = new Float32Array(source.length);
+    DCTInPlace(source, dest);
+    destinationBuffer.setChannelColumn(dest, channel, index);
   }
 
 

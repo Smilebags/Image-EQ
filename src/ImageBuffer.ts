@@ -43,4 +43,13 @@ export default class ImageBuffer {
       this.setChannelValue(values[i], channel, i, rowIndex)
     }
   }
+
+  setChannelColumn(values: Float32Array, channel: ChannelIndex, columnIndex: number): void {
+    if(values.length !== this.width) {
+      return;
+    }
+    for (let i = 0; i < this.width; i++) {
+      this.setChannelValue(values[i], channel, columnIndex, i)
+    }
+  }
 }

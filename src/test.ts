@@ -21,19 +21,21 @@ var imageElement = document.querySelector('#imageViewer') as HTMLImageElement;
 imageElement.onload = async function () {
   drawImageToCanvas(imageElement);
   const sourceImageData = ctx.getImageData(0, 0, canvasSize, canvasSize);
-  console.log(sourceImageData);
   const sourceBuffer = new SharedArrayBuffer(sourceImageData.data.length * 4);
   const sourceArr = new Float32Array(sourceBuffer);
+  const intermediateBuffer = new SharedArrayBuffer(sourceImageData.data.length * 4);
+  const intermediateArr = new Float32Array(intermediateBuffer);
+  const destinationBuffer = new SharedArrayBuffer(sourceImageData.data.length * 4);
+  const destinationArr = new Float32Array(destinationBuffer);
   for (let i = 0; i < sourceImageData.data.length; i++) {
     sourceArr[i] = sourceImageData.data[i];
   }
   console.log(sourceArr);
 
-  const destinationBuffer = new SharedArrayBuffer(sourceImageData.data.length * 4);
-  const destinationArr = new Float32Array(destinationBuffer);
 
 
-  const message: WorkerMessage = {
+
+  worker.postMessage({
     payload: {
       width: sourceImageData.width,
       height: sourceImageData.height,
@@ -41,10 +43,17 @@ imageElement.onload = async function () {
       buffer: sourceArr,
     },
     operation: 'setBuffer',
-  };
-  worker.postMessage(message);
-
-  const destinationMessage: WorkerMessage = {
+  });
+  worker.postMessage({
+    payload: {
+      width: sourceImageData.width,
+      height: sourceImageData.height,
+      name: 'intermediate',
+      buffer: intermediateArr,
+    },
+    operation: 'setBuffer',
+  });
+  worker.postMessage({
     payload: {
       width: sourceImageData.width,
       height: sourceImageData.height,
@@ -52,9 +61,8 @@ imageElement.onload = async function () {
       buffer: destinationArr,
     },
     operation: 'setBuffer',
-  };
-  worker.postMessage(destinationMessage);
-  await sleep(500);
+  });
+  await sleep(50);
 
   for (let index = 0; index < canvasSize; index++) {
     for (let channel = 0; channel < 3; channel++) {
@@ -65,6 +73,21 @@ imageElement.onload = async function () {
           index,
           orientation: 'row',
           sourceBufferName: 'source',
+          destinationBufferName: 'intermediate',
+        },
+      });
+    }
+  }
+  await sleep(3000)
+  for (let index = 0; index < canvasSize; index++) {
+    for (let channel = 0; channel < 3; channel++) {
+      worker.postMessage({
+        operation: 'dct',
+        payload: {
+          channel,
+          index,
+          orientation: 'column',
+          sourceBufferName: 'intermediate',
           destinationBufferName: 'destination',
         },
       });
@@ -72,14 +95,15 @@ imageElement.onload = async function () {
   }
 
 
-  await sleep(5000);
-  const destinationImageData = new ImageData(canvasSize, canvasSize);
-  for (let i = 0; i < destinationArr.length; i++) {
-    const value = i % 4 === 3 ? 255 : destinationArr[i];
-    destinationImageData.data[i] = value;
+  while(true) {
+    await sleep(20);
+    const destinationImageData = new ImageData(canvasSize, canvasSize);
+    for (let i = 0; i < destinationArr.length; i++) {
+      const value = i % 4 === 3 ? 255 : destinationArr[i] / 128;
+      destinationImageData.data[i] = value;
+    }
+    ctx.putImageData(destinationImageData, 0, 0);  
   }
-  ctx.putImageData(destinationImageData, 0, 0);  
-
 }
 
 
