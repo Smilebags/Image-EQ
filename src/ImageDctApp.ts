@@ -31,7 +31,6 @@ export default class ImageDctApp {
     this.imageElement = new Image();
     this.imageElement.onload = async () => {
       await this.initialise();
-      this.draw();
     };
     this.imageElement.style.display = 'none';
     document.body.appendChild(this.imageElement);
@@ -98,7 +97,8 @@ export default class ImageDctApp {
       if (x === 0 && y === 0) {
         return;
       }
-      const distance = (((x / this.canvasSize) ** 2) + ((y / this.canvasSize) ** 2)) ** 0.5;
+      const diagonalDistance = ((this.canvasSize ** 2) * 2) ** 0.5
+      const distance = (((x / diagonalDistance) ** 2) + ((y / diagonalDistance) ** 2)) ** 0.5;
       const scalingFactor = this.frequencyGainFunction(distance, x / this.canvasSize, y / this.canvasSize);
       const applyTransformationToChannel = (channel: ChannelIndex) => {
         const scaled = dctImageBuffer.getChannelValue(channel, x, y) * scalingFactor;

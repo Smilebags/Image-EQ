@@ -1,8 +1,42 @@
 <html>
   <head>
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <style>
+      .zones {
+        width: 512px;
+        display: flex;
+        font-size: 10px;
+        text-align: center;
+      }
+      .zones > span {
+        width: 12.5%;
+        overflow: hidden;
+      }
+
+      .center {
+        width: 512px;
+        margin: auto;
+      }
+    </style>
   </head>
   <body>
-    <canvas width="512" height="512" id="canvasElement"></canvas>
+    <div class="center">
+      <h1>Image EQ</h1>
+      <canvas width="512" height="512" id="canvasElement"></canvas>
+      <canvas width="512" height="256" id="eq2"></canvas>
+      <div class="zones">
+        <span>Gradient</span>
+        <span>Big Chunks</span>
+        <span>Little Chunks</span>
+        <span>Clarity</span>
+        <span>Structure</span>
+        <span>Sharpening</span>
+        <span>Crispness</span>
+        <span>Not Much</span>
+      </div>
+      <p>This is still a work in progress, my final plan is to have an EQ style graph with controllable points in order to push/pull certain frequencies in the image. This feature isn't available in any major software so I thought I would develop it myself.</p>
+      <p>This uses a modified version of <a href="https://antimatter15.com/2015/05/cooley-tukey-fft-dct-idct-in-under-1k-of-javascript/">Kevin Kwok's code</a> for FFT and DCT. It could be made significantly faster by moving the heavy calculations to the GPU or alternatively to WASM.</p>
+    </div>
     <script src="index.js" type="module"></script>
   </body>
 </html>

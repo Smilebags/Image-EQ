@@ -5,9 +5,9 @@ body {
 }
 
 body {
-    font-size: calc(16px + 1vmin);
+    font-size: calc(12px + 0.5vmin);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: rgba(0, 0, 0, 0.8);
+    color: rgba(0, 0, 0, 0.9);
     background-color: #f0f0f0;
     padding: 16px;
 }
@@ -15,7 +15,7 @@ body {
 h1 {
     text-align: center;
     text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.6);
+    color: rgba(0, 0, 0, 0.8);
 }
 
 a,
