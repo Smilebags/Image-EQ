@@ -3,6 +3,8 @@ import ImageBuffer from "./ImageBuffer.js";
 import { ChannelIndex } from "./interfaces.js";
 import { WorkerMessage } from "./worker.js";
 
+type FrequencyGainFunction = (distance: number, x: number, y: number) => number;
+
 export default class ImageDctApp {
   debugMode = false;
   ctx: CanvasRenderingContext2D;
@@ -15,12 +17,16 @@ export default class ImageDctApp {
     verticalIdct: Float32Array;
     destination: Float32Array;
   };
+  private frequencyGainFunction: FrequencyGainFunction =
+    (d, x, y) => 1 - (x + y) / d//(d < 0.1 || d > 0.2) ? ((x % 0.25) * 10) : 3;
   constructor(
     private canvasEl: HTMLCanvasElement,
     private canvasSize: number,
     imageUrl: string,
     threadCount: number,
   ) {
+    this.canvasEl.width = this.canvasSize;
+    this.canvasEl.height = this.canvasSize;
     this.ctx = this.canvasEl.getContext('2d')!;
     this.imageElement = new Image();
     this.imageElement.onload = async () => {
@@ -44,25 +50,25 @@ export default class ImageDctApp {
 
   async draw() {
     await this.doDctOperation('dct', 'row', 'source', 'horizontalDct');
-    if(this.debugMode) {
-      this.drawBufferToCanvas(this.buffers.horizontalDct);
-    }
+    this.debugMode && this.drawBufferToCanvas(this.buffers.horizontalDct);
     await this.doDctOperation('dct', 'column', 'horizontalDct', 'dct');
-    if (this.debugMode) {
-      this.drawBufferToCanvas(this.buffers.dct);
-    }
+    this.debugMode && this.drawBufferToCanvas(this.buffers.dct);
 
     this.applyFrequencyTransform();
-    if (this.debugMode) {
-      this.drawBufferToCanvas(this.buffers.dct);
-    }
+    this.debugMode && this.drawBufferToCanvas(this.buffers.dct);
 
     await this.doDctOperation('idct', 'column', 'dct', 'verticalIdct');
-    if (this.debugMode) {
-      this.drawBufferToCanvas(this.buffers.verticalIdct);
-    }
+    this.debugMode && this.drawBufferToCanvas(this.buffers.verticalIdct);
     await this.doDctOperation('idct', 'row', 'verticalIdct', 'destination');
     this.drawBufferToCanvas(this.buffers.destination);
+  }
+
+  setDebugMode(isDebugMode: boolean) {
+    this.debugMode = isDebugMode;
+  }
+
+  setFrequencyGainFunction(fn: FrequencyGainFunction) {
+    this.frequencyGainFunction = fn;
   }
 
   private async initialise() {
@@ -86,7 +92,6 @@ export default class ImageDctApp {
     }));
   }
 
-
   private applyFrequencyTransform() {
     const dctImageBuffer = new ImageBuffer(this.canvasSize, this.canvasSize, this.buffers.dct);
     this.forEachPixel((x, y) => {
@@ -94,12 +99,11 @@ export default class ImageDctApp {
         return;
       }
       const distance = (((x / this.canvasSize) ** 2) + ((y / this.canvasSize) ** 2)) ** 0.5;
-      function applyTransformationToChannel(channel: ChannelIndex) {
-        const value = dctImageBuffer.getChannelValue(channel, x, y);
-        const factor = distance;
-        const scaled = value * factor;
+      const scalingFactor = this.frequencyGainFunction(distance, x / this.canvasSize, y / this.canvasSize);
+      const applyTransformationToChannel = (channel: ChannelIndex) => {
+        const scaled = dctImageBuffer.getChannelValue(channel, x, y) * scalingFactor;
         dctImageBuffer.setChannelValue(scaled, channel, x, y);
-      }
+      };
 
       applyTransformationToChannel(0);
       applyTransformationToChannel(1);
