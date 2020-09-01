@@ -76,3 +76,23 @@ export function DCTInPlace(source: Float32Array, destination: Float32Array): voi
   }
 };
 
+
+export function IDCTInPlace(source: Float32Array, destination: Float32Array) {
+  var N = source.length;
+  var K = Math.PI / (2 * N);
+  var im = new Float64Array(N);
+  var re = new Float64Array(N);
+  re[0] = source[0] / N / 2;
+  for (var i = 1; i < N; i++) {
+    var im2 = Math.sin(i * K);
+    var re2 = Math.cos(i * K);
+    re[i] = (source[N - i] * im2 + source[i] * re2) / N / 2;
+    im[i] = (im2 * source[i] - source[N - i] * re2) / N / 2;
+  }
+  FFT(im, re);
+  for (var i = 0; i < N / 2; i++) {
+    destination[2 * i] = re[i]
+    destination[2 * i + 1] = re[N - i - 1]
+  }
+  return destination;
+}

@@ -1,10 +1,11 @@
-import { DCT, DCTInPlace, IDCT } from './dct.js';
+import { DCT, DCTInPlace, IDCT, IDCTInPlace } from './dct.js';
 import ImageBuffer from './ImageBuffer.js';
 import { ChannelIndex } from './interfaces.js';
 
 interface WorkerMessageBase {
   operation: string;
   payload: any;
+  messageId?: number;
 }
 
 export interface SetSourceBufferMessage extends WorkerMessageBase {
@@ -27,7 +28,17 @@ export interface DCTMessage extends WorkerMessageBase {
   };
 }
 
-export type WorkerMessage = SetSourceBufferMessage | DCTMessage;
+export interface IDCTMessage extends WorkerMessageBase {
+  operation: 'idct';
+  payload: {
+    orientation: 'row' | 'column';
+    index: number;
+    channel: ChannelIndex;
+    sourceBufferName: string;
+    destinationBufferName: string;
+  };
+}
+export type WorkerMessage = SetSourceBufferMessage | DCTMessage | IDCTMessage;
 
 export interface WorkerResponse {
   values: number[];
@@ -42,6 +53,7 @@ class CalculationWorker {
 
 
   handleMessage(message: WorkerMessage) {
+    let response;
     switch (message.operation) {
       case 'setBuffer':
         this.handleSetSourceBufferMessage(message.payload);
@@ -49,9 +61,16 @@ class CalculationWorker {
       case 'dct':
         this.handleDCTMessage(message.payload);
         break;
+      case 'idct':
+        this.handleIDCTMessage(message.payload);
+        break;
       default:
         break;
     }
+    this.sendMessage({
+      messageId: message.messageId,
+      body: response,
+    })
   }
 
   private handleSetSourceBufferMessage(payload: SetSourceBufferMessage['payload']) {
@@ -71,6 +90,28 @@ class CalculationWorker {
       );
     } else {
         this.columnDCT(
+          payload.channel,
+          payload.index,
+          this.buffers[payload.sourceBufferName],
+            this.buffers[payload.destinationBufferName],
+      );
+    }
+  }
+
+  
+  private handleIDCTMessage(payload: DCTMessage['payload']) {
+    if (!this.buffers[payload.sourceBufferName]) {
+      return;
+    }
+    if (payload.orientation === 'row') {
+      this.rowIDCT(
+        payload.channel,
+        payload.index,
+        this.buffers[payload.sourceBufferName],
+        this.buffers[payload.destinationBufferName],
+      );
+    } else {
+        this.columnIDCT(
           payload.channel,
           payload.index,
           this.buffers[payload.sourceBufferName],
@@ -103,9 +144,32 @@ class CalculationWorker {
     destinationBuffer.setChannelColumn(dest, channel, index);
   }
 
+  
+  private rowIDCT(
+    channel: ChannelIndex,
+    index: number,
+    sourceBuffer: ImageBuffer,
+    destinationBuffer: ImageBuffer,
+  ) {
+    const source = sourceBuffer.getChannelRow(channel, index);
+    const dest = new Float32Array(source.length);
+    IDCTInPlace(source, dest);
+    destinationBuffer.setChannelRow(dest, channel, index);
+  }
 
+  private columnIDCT(
+    channel: ChannelIndex,
+    index: number,
+    sourceBuffer: ImageBuffer,
+    destinationBuffer: ImageBuffer,
+  ) {
+    const source = sourceBuffer.getChannelColumn(channel, index);
+    const dest = new Float32Array(source.length);
+    IDCTInPlace(source, dest);
+    destinationBuffer.setChannelColumn(dest, channel, index);
+  }
 
-  sendMessage(message: any) {
+  private sendMessage(message: any) {
     this.postMessage(message);
   }
 }
